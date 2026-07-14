@@ -2,7 +2,14 @@
 
 /* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: auto; }
+
+/* Scroll-snap: one slide at a time like a presentation */
+html {
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  height: 100%;
+}
 
 body {
   background: #000;
@@ -11,6 +18,7 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  height: 100%;
 }
 
 /* ══════════════════════════════════════
@@ -306,3 +314,181 @@ body {
   color: rgba(255,255,255,0.38);
   margin-top: 24px;
 }
+
+/* ══════════════════════════════════════
+   TITLE SLIDE — particle text section
+   ══════════════════════════════════════ */
+/* Title: full viewport, snaps */
+.title-slide {
+  height: 100vh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* Subtitle + scroll hint overlay */
+.title-overlay {
+  position: fixed;
+  bottom: 16vh;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  pointer-events: none;
+}
+
+.title-subtitle {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+.scroll-hint {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.28);
+  opacity: 0;
+}
+
+.scroll-arrow {
+  display: inline-block;
+  animation: arrowBounce 1.6s ease-in-out infinite;
+}
+
+@keyframes arrowBounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(5px); }
+}
+
+/* ══════════════════════════════════════
+   PROBLEMS ROOT
+   ══════════════════════════════════════ */
+.problems-root {
+  position: relative;
+  z-index: 10;
+}
+
+.problem-slide {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  position: relative;
+  /* Each problem = one full snap */
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* LEFT column */
+.prob-left {
+  display: flex;
+  flex-direction: column;
+  padding: 0 3vw 6vh 6vw;
+  position: relative;
+  z-index: 12; /* above canvas so text is readable */
+}
+
+/* Top zone: transparent, shows particle canvas through */
+.prob-particle-zone {
+  flex: 1;
+  min-height: 45vh; /* space for particle text above news card */
+}
+
+/* News card */
+.news-card {
+  max-width: 480px;
+}
+
+.news-source {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(100, 220, 100, 0.7);
+  margin-bottom: 14px;
+}
+
+.news-headline {
+  font-size: clamp(15px, 1.5vw, 20px);
+  font-weight: 600;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 16px;
+  letter-spacing: -0.01em;
+}
+
+.news-stat-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.news-stat {
+  font-size: clamp(28px, 3.5vw, 46px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: #d1f734; /* bright lime accent */
+  line-height: 1;
+}
+
+.news-stat-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  max-width: 200px;
+  line-height: 1.5;
+}
+
+.news-body {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 18px;
+}
+
+.news-date {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* RIGHT column — image */
+.prob-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8vh 4vw 8vh 2vw;
+}
+
+.prob-img {
+  width: 100%;
+  max-height: 80vh;
+  object-fit: cover;
+  border-radius: 8px;
+  opacity: 0.85;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 24px 60px rgba(0,0,0,0.7);
+  transition: opacity 0.4s ease;
+}
+
+.prob-img:hover {
+  opacity: 1;
+}
+
