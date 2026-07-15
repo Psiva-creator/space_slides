@@ -139,17 +139,15 @@ export default function Solutions() {
     // Fade out particle canvas as solution section enters
     ScrollTrigger.create({
       trigger: solutionSection, start:'top 80%', end:'top 5%', scrub:true,
-      onUpdate:(self)=>{ const c=document.getElementById('bg-canvas'); if(c) c.style.opacity=1-self.progress; },
-      onLeave:()=>{ const c=document.getElementById('bg-canvas'); if(c) c.style.opacity=0; },
-      onEnterBack:()=>{ const c=document.getElementById('bg-canvas'); if(c) c.style.opacity=0; }
+      onUpdate:(self)=>{ const c=document.getElementById('bg-canvas'); if(c) c.style.opacity=1-self.progress; }
     });
 
-    // Fade the particle canvas back in as solution section leaves (going into AIModel)
+    // Fade the particle canvas back in *after* the pinned section finishes scrolling
     ScrollTrigger.create({
-      trigger: solutionSection, start:'bottom bottom', end:'bottom 20%', scrub:true,
-      onUpdate:(self)=>{ const c=document.getElementById('bg-canvas'); if(c) c.style.opacity=self.progress; },
-      onEnter:()=>{ const c=document.getElementById('bg-canvas'); if(c) c.style.opacity=0; },
-      onLeaveBack:()=>{ const c=document.getElementById('bg-canvas'); if(c) c.style.opacity=0; }
+      start: () => st.end, 
+      end: () => st.end + window.innerHeight * 0.6, 
+      scrub: true,
+      onUpdate:(self)=>{ const c=document.getElementById('bg-canvas'); if(c) c.style.opacity=self.progress; }
     });
 
     return () => ScrollTrigger.getAll().forEach(s => s.kill());
