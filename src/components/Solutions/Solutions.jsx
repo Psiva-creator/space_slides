@@ -136,19 +136,7 @@ export default function Solutions() {
       onLeaveBack: () => { gsap.set(panels, { opacity: 0 }); },
     });
 
-    // Fade out particle canvas as solution section enters
-    ScrollTrigger.create({
-      trigger: solutionSection, start:'top 80%', end:'top 5%', scrub:true,
-      onUpdate:(self)=>{ const c=document.getElementById('bg-canvas'); if(c) c.style.opacity=1-self.progress; }
-    });
-
-    // Fade the particle canvas back in *after* the pinned section finishes scrolling
-    ScrollTrigger.create({
-      start: () => st.end, 
-      end: () => st.end + window.innerHeight * 0.6, 
-      scrub: true,
-      onUpdate:(self)=>{ const c=document.getElementById('bg-canvas'); if(c) c.style.opacity=self.progress; }
-    });
+    // Removed canvas opacity fade triggers so the background theme remains fully visible
 
     return () => ScrollTrigger.getAll().forEach(s => s.kill());
   }, []);
