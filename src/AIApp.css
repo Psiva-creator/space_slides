@@ -1,0 +1,428 @@
+/* ═══════════════════════════════════════════════════
+   AIApp.css — Vaayu Swarm — Scroll-animated pipeline
+═══════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ══════════════════════════════════
+   SCROLL ROOT — two full-height slides
+══════════════════════════════════ */
+#ai-scroll-root {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ══════════════════════════════════
+   SLIDE 1 — Landing
+══════════════════════════════════ */
+.ai-landing-slide {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  position: relative;
+}
+
+.ai-landing-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  opacity: 0;          /* animated in via gsap */
+  text-align: center;
+}
+
+.ai-landing-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(209,247,52,0.65);
+  border: 1px solid rgba(209,247,52,0.28);
+  border-radius: 4px;
+  padding: 5px 14px;
+  background: rgba(209,247,52,0.05);
+}
+
+.ai-landing-headline {
+  font-size: clamp(44px, 6vw, 88px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #fff;
+  line-height: 1;
+  margin: 0;
+}
+
+.ai-landing-sub {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+}
+
+.ai-scroll-hint {
+  position: absolute;
+  bottom: 9vh;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.22);
+  opacity: 0;          /* animated in via gsap */
+}
+
+.ai-scroll-arrow {
+  display: inline-block;
+  animation: arrowBounce 1.7s ease-in-out infinite;
+}
+@keyframes arrowBounce {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(6px); }
+}
+
+/* ══════════════════════════════════
+   SLIDE 2 — Flow diagram
+══════════════════════════════════ */
+.ai-flow-slide {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 28px 36px;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  font-family: 'Inter', sans-serif;
+}
+
+.ai-flow-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 36px;
+}
+
+.ai-tag {
+  border: 1px solid rgba(209,247,52,0.32);
+  border-radius: 4px;
+  padding: 5px 12px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(209,247,52,0.70);
+  background: rgba(209,247,52,0.05);
+}
+
+.ai-header-right {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.28);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ai-dot {
+  display: inline-block;
+  width: 7px; height: 7px; border-radius: 50%;
+}
+.ai-dot--edge   { background: #d1f734; box-shadow: 0 0 9px #d1f734; }
+.ai-dot--server { background: #00d4ff; box-shadow: 0 0 9px #00d4ff; }
+
+/* ══════════════════════════════════
+   ROW WRAPPERS
+══════════════════════════════════ */
+.flow-row-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.flow-row-wrap--server { margin-top: 0; }
+
+.flow-row-label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.30em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.16);
+}
+
+.flow-row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.flow-cell {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ══════════════════════════════════
+   FLOW BOX — base (hidden state)
+══════════════════════════════════ */
+.flow-box {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 18px;
+  border-radius: 10px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  pointer-events: auto;
+  cursor: default;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+
+  /* Hidden by default — slides up + fades in */
+  opacity: 0;
+  transform: translateY(36px);
+  transition:
+    opacity   0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.22s ease,
+    background 0.22s ease;
+}
+
+/* Top-edge shine */
+.flow-box::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 12px; right: 12px;
+  height: 1px;
+  border-radius: 1px;
+  opacity: 0.45;
+  transition: opacity 0.22s ease;
+}
+.flow-box:hover { transform: translateY(-4px) !important; }
+.flow-box:hover::before { opacity: 0.9; }
+
+/* ── Visible state ── */
+.flow-box--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Edge */
+.flow-box--edge {
+  background: rgba(209,247,52,0.06);
+  border: 1px solid rgba(209,247,52,0.22);
+  box-shadow: 0 0 0 1px rgba(209,247,52,0.07), 0 10px 36px rgba(0,0,0,0.52),
+              inset 0 1px 0 rgba(209,247,52,0.10);
+}
+.flow-box--edge::before { background: rgba(209,247,52,0.42); }
+.flow-box--edge:hover {
+  background: rgba(209,247,52,0.10);
+  box-shadow: 0 0 0 1px rgba(209,247,52,0.34), 0 16px 48px rgba(0,0,0,0.58),
+              0 0 32px rgba(209,247,52,0.10), inset 0 1px 0 rgba(209,247,52,0.18);
+}
+
+/* Server */
+.flow-box--server {
+  background: rgba(0,212,255,0.05);
+  border: 1px solid rgba(0,212,255,0.20);
+  box-shadow: 0 0 0 1px rgba(0,212,255,0.06), 0 10px 36px rgba(0,0,0,0.52),
+              inset 0 1px 0 rgba(0,212,255,0.09);
+}
+.flow-box--server::before { background: rgba(0,212,255,0.42); }
+.flow-box--server:hover {
+  background: rgba(0,212,255,0.10);
+  box-shadow: 0 0 0 1px rgba(0,212,255,0.32), 0 16px 48px rgba(0,0,0,0.58),
+              0 0 32px rgba(0,212,255,0.10), inset 0 1px 0 rgba(0,212,255,0.16);
+}
+
+/* Title */
+.flow-box-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1.45;
+  flex-shrink: 0;
+  width: 90px;
+  padding-top: 1px;
+}
+.flow-box--edge   .flow-box-title { color: #d1f734; }
+.flow-box--server .flow-box-title { color: #00d4ff; }
+
+/* Divider */
+.flow-box-divider {
+  width: 1px;
+  align-self: stretch;
+  flex-shrink: 0;
+  border-radius: 1px;
+  opacity: 0.55;
+}
+.flow-box--edge   .flow-box-divider { background: rgba(209,247,52,0.30); }
+.flow-box--server .flow-box-divider { background: rgba(0,212,255,0.26); }
+
+/* Body */
+.flow-box-body {
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.75;
+  color: rgba(255,255,255,0.50);
+  letter-spacing: 0.015em;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ══════════════════════════════════
+   ARROWS — also animated
+══════════════════════════════════ */
+.flow-arrow {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.flow-arrow--visible { opacity: 1; }
+
+.flow-arrow-line { height: 2px; flex: 1; border-radius: 2px; }
+.flow-arrow-head {
+  width: 0; height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  flex-shrink: 0;
+}
+
+.flow-arrow--edge   .flow-arrow-line {
+  background: rgba(209,247,52,0.6);
+  box-shadow: 0 0 6px rgba(209,247,52,0.4);
+}
+.flow-arrow--edge   .flow-arrow-head { border-left: 10px solid rgba(209,247,52,0.7); }
+.flow-arrow--server .flow-arrow-line {
+  background: rgba(0,212,255,0.55);
+  box-shadow: 0 0 6px rgba(0,212,255,0.35);
+}
+.flow-arrow--server .flow-arrow-head { border-left: 10px solid rgba(0,212,255,0.65); }
+
+/* ══════════════════════════════════
+   HANDOFF NODE — also animated
+══════════════════════════════════ */
+.handoff-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.handoff-node {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 18px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.16);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 10px 36px rgba(0,0,0,0.52),
+              inset 0 1px 0 rgba(255,255,255,0.07);
+  width: 180px;
+  position: relative;
+  overflow: hidden;
+
+  opacity: 0;
+  transform: translateY(36px);
+  transition:
+    opacity   0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.handoff-node::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 12px; right: 12px;
+  height: 1px;
+  background: rgba(255,255,255,0.35);
+  border-radius: 1px;
+}
+
+.handoff-node::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  animation: handoffPulse 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes handoffPulse {
+  0%,100%{ opacity:0.2; transform:scale(1); }
+  50%    { opacity:0.7; transform:scale(1.04); }
+}
+
+.handoff-node--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.handoff-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.70);
+  flex-shrink: 0;
+  width: 52px;
+  padding-top: 1px;
+}
+
+.handoff-divider {
+  width: 1px !important;
+  align-self: stretch;
+  background: rgba(255,255,255,0.18) !important;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.handoff-body {
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.75;
+  color: rgba(255,255,255,0.36);
+  letter-spacing: 0.015em;
+  flex: 1;
+}
+
+/* Vertical connector */
+.handoff-vline {
+  width: 1px;
+  height: 44px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.22), rgba(0,212,255,0.40));
+  position: relative;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.handoff-vline--visible { opacity: 1; }
+
+.handoff-vline::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 50%;
+  transform: translateX(-50%);
+  width:0; height:0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 8px solid rgba(0,212,255,0.50);
+}
