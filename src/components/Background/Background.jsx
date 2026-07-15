@@ -143,9 +143,8 @@ export default function Background({ titleSlideRef, subtitleRef, scrollHintRef, 
 
     // ── Instantiate Procedural Drone ──
     const { mesh: droneMesh, material: droneMat } = createProceduralDrone();
-    // Scale drone mesh to fit nicely inside z=480 perspective camera view
-    droneMesh.scale.set(8.5, 8.5, 8.5);
-    droneMesh.position.set(0, -5, 0); // slightly lowered
+    droneMesh.scale.set(12, 12, 12); // Scaled up to compensate for distance
+    droneMesh.position.set(0, -70, -150); // Pushed further back to enhance arrival parallax
     droneMesh.rotation.x = 0.15; // default fly tilt
     scene.add(droneMesh);
 
@@ -180,11 +179,11 @@ export default function Background({ titleSlideRef, subtitleRef, scrollHintRef, 
       
       const prog = Math.min(1, scrollY / innerHeight);
       
-      // Continuous warp effect for nebula
-      nebulaMat.uniforms.uScroll.value = totalProg * 6.0; 
+      // Continuous warp effect for nebula (faster travel)
+      nebulaMat.uniforms.uScroll.value = totalProg * 12.0; 
       
-      // Continuous Z-axis travel for the camera
-      camera.position.z = 480 - totalProg * 280;
+      // Continuous Z-axis travel for the camera (travel closer to the drone)
+      camera.position.z = 480 - totalProg * 350;
 
       if (subtitleRef.current)   subtitleRef.current.style.opacity   = Math.max(0, 1 - prog*2.2);
       if (scrollHintRef.current) scrollHintRef.current.style.opacity = Math.max(0, 1 - prog*3.5);
