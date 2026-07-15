@@ -171,10 +171,21 @@ export default function Background({ titleSlideRef, subtitleRef, scrollHintRef, 
     };
     gsap.to(ms, { t:1, duration:2.8, delay:0.5, ease:'expo.inOut', onComplete:showSubtitle });
 
-    // Scroll listener — ONLY for nebula tint + subtitle fade. Does NOT touch ms.t
+    // Scroll listener — ONLY for continuous Z-axis space travel + subtitle fade. Does NOT touch ms.t
     const onScroll = () => {
+      const scrollY = window.scrollY;
+      const innerHeight = window.innerHeight;
+      const maxScroll = document.body.scrollHeight - innerHeight;
+      const totalProg = maxScroll > 0 ? scrollY / maxScroll : 0;
+      
       const prog = Math.min(1, scrollY / innerHeight);
-      nebulaMat.uniforms.uScroll.value = prog * 0.3;
+      
+      // Continuous warp effect for nebula
+      nebulaMat.uniforms.uScroll.value = totalProg * 6.0; 
+      
+      // Continuous Z-axis travel for the camera
+      camera.position.z = 480 - totalProg * 280;
+
       if (subtitleRef.current)   subtitleRef.current.style.opacity   = Math.max(0, 1 - prog*2.2);
       if (scrollHintRef.current) scrollHintRef.current.style.opacity = Math.max(0, 1 - prog*3.5);
     };
