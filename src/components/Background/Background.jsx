@@ -201,36 +201,26 @@ export default function Background({ titleSlideRef, subtitleRef, scrollHintRef, 
       onUpdate: (self) => {
         const prog = self.progress;
 
-        // 1. Fade the canvas back in (since Solutions faded it out to 0)
-        const canvas = canvasRef.current;
-        if (canvas) {
-          canvas.style.opacity = prog;
-        }
-
-        // 2. Fade out text particles (ptsMat) using the uAlpha uniform
+        // 1. Fade out text particles (ptsMat) using the uAlpha uniform
         if (ptsMat.uniforms.uAlpha) {
           ptsMat.uniforms.uAlpha.value = 1.0 - prog;
         }
 
-        // 3. Animate drone assembly progress (uProgress)
+        // 2. Animate drone assembly progress (uProgress)
         // Drone builds between progress 0.10 and 0.85
         const droneProg = Math.max(0, Math.min(1, (prog - 0.10) / 0.75));
         droneMat.uniforms.uProgress.value = droneProg;
 
-        // 4. Rotate the drone as it builds
+        // 3. Rotate the drone as it builds
         droneMesh.rotation.y = prog * Math.PI * 3.0;
         
-        // 5. Vertical drift
+        // 4. Vertical drift
         droneMesh.position.y = -5 + 3.5 * Math.sin(prog * Math.PI);
       },
       onLeaveBack: () => {
         droneMat.uniforms.uProgress.value = 0.0;
         if (ptsMat.uniforms.uAlpha) {
           ptsMat.uniforms.uAlpha.value = 1.0;
-        }
-        const canvas = canvasRef.current;
-        if (canvas) {
-          canvas.style.opacity = 0;
         }
       }
     });

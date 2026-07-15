@@ -140,6 +140,16 @@ export default function Solutions() {
     ScrollTrigger.create({
       trigger: solutionSection, start:'top 80%', end:'top 5%', scrub:true,
       onUpdate:(self)=>{ const c=document.getElementById('bg-canvas'); if(c) c.style.opacity=1-self.progress; },
+      onLeave:()=>{ const c=document.getElementById('bg-canvas'); if(c) c.style.opacity=0; },
+      onEnterBack:()=>{ const c=document.getElementById('bg-canvas'); if(c) c.style.opacity=0; }
+    });
+
+    // Fade the particle canvas back in as solution section leaves (going into AIModel)
+    ScrollTrigger.create({
+      trigger: solutionSection, start:'bottom bottom', end:'bottom 20%', scrub:true,
+      onUpdate:(self)=>{ const c=document.getElementById('bg-canvas'); if(c) c.style.opacity=self.progress; },
+      onEnter:()=>{ const c=document.getElementById('bg-canvas'); if(c) c.style.opacity=0; },
+      onLeaveBack:()=>{ const c=document.getElementById('bg-canvas'); if(c) c.style.opacity=0; }
     });
 
     return () => ScrollTrigger.getAll().forEach(s => s.kill());
