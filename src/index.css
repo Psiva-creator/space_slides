@@ -3,12 +3,12 @@
 /* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* Scroll-snap: one slide at a time like a presentation */
+/* Let the window handle scrolling natively for GSAP ScrollTrigger.
+   Avoid height: 100% on html/body as it breaks native scroll measurements. */
 html {
   scroll-behavior: smooth;
-  scroll-snap-type: y mandatory;
-  overflow-y: scroll;
-  height: 100%;
+  /* Proximity snap lets slides snap but doesn't forcefully override GSAP scrubbing */
+  scroll-snap-type: y proximity;
 }
 
 body {
@@ -18,7 +18,6 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  height: 100%;
 }
 
 /* ══════════════════════════════════════
@@ -492,3 +491,343 @@ body {
   opacity: 1;
 }
 
+/* ══════════════════════════════════════
+   SOLUTION SECTION — cinematic pinned panels
+   ══════════════════════════════════════ */
+
+.solution-section {
+  position: relative;
+  z-index: 10;
+  scroll-snap-align: none; /* opt out — GSAP controls this section */
+}
+
+.solution-stage {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ── Ambient glow orb ── */
+.solution-glow-orb {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(77,255,138,0.06) 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: orbPulse 4s ease-in-out infinite;
+}
+
+@keyframes orbPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1);   opacity: 0.7; }
+  50%       { transform: translate(-50%, -50%) scale(1.15); opacity: 1;   }
+}
+
+/* ── Header ── */
+.solution-header {
+  position: absolute;
+  top: 7vh;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+  z-index: 5;
+  white-space: nowrap;
+}
+
+.solution-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: #4dff8a;
+  margin-bottom: 10px;
+  opacity: 0.9;
+}
+
+.solution-title-main {
+  font-size: clamp(20px, 3vw, 38px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+  text-shadow: 0 0 50px rgba(77,255,138,0.25);
+}
+
+/* ── Progress bar ── */
+.solution-progress-track {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(420px, 60vw);
+  height: 2px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.solution-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #4dff8a, #a8ff78);
+  border-radius: 2px;
+  box-shadow: 0 0 12px rgba(77,255,138,0.8);
+  transition: width 0.15s linear;
+}
+
+/* ── Left mini stack ── */
+.solution-mini-stack {
+  position: absolute;
+  left: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.solution-mini-card {
+  width: 188px;
+  min-height: 52px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(8,16,10,0.6);
+  border: 1px solid rgba(77,255,138,0.10);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  opacity: 0.35;
+  transition:
+    border-color 0.5s ease,
+    background   0.5s ease,
+    box-shadow   0.5s ease,
+    opacity      0.5s ease;
+}
+
+.solution-mini-card.active {
+  opacity: 1;
+  border-color: rgba(77,255,138,0.55);
+  background: rgba(18,44,28,0.75);
+  box-shadow:
+    0 0 0 1px rgba(77,255,138,0.08),
+    0 0 22px rgba(77,255,138,0.22),
+    inset 0 0 16px rgba(77,255,138,0.06);
+}
+
+.solution-mini-card.past {
+  opacity: 0.22;
+  border-color: rgba(77,255,138,0.06);
+}
+
+.solution-mini-num {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  color: #4dff8a;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.solution-mini-title {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.82);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Full panels — GSAP owns x/y/scale/opacity ── */
+.solution-panel {
+  position: absolute;
+  top: 0; left: 0;
+  width: min(740px, 82vw);
+  padding: 48px 52px 44px;
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg,
+      rgba(16,32,22,0.50) 0%,
+      rgba(6,12,8,0.55)   100%);
+  border: 1px solid rgba(77,255,138,0.16);
+  backdrop-filter: blur(28px) saturate(160%) brightness(1.05);
+  -webkit-backdrop-filter: blur(28px) saturate(160%) brightness(1.05);
+  box-shadow:
+    0 0   0 1px rgba(77,255,138,0.06),
+    0 0  80px rgba(77,255,138,0.07),
+    0 32px 80px rgba(0,0,0,0.55),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+  opacity: 0;
+  will-change: transform, opacity, filter;
+  z-index: 4;
+  overflow: hidden;
+}
+
+/* Shine sweep on card enter */
+.solution-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    transparent 30%,
+    rgba(255,255,255,0.03) 50%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* Left accent line */
+.solution-panel::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 12%; height: 76%; width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(to bottom,
+    transparent 0%,
+    #4dff8a 30%,
+    #a8ff78 70%,
+    transparent 100%);
+  opacity: 0.6;
+}
+
+/* ── Panel top row (tag + counter) ── */
+.solution-panel-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.solution-panel-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #4dff8a;
+  background: rgba(77,255,138,0.10);
+  border: 1px solid rgba(77,255,138,0.22);
+  border-radius: 100px;
+  padding: 5px 12px;
+  line-height: 1;
+}
+
+.solution-panel-counter {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  color: rgba(255,255,255,0.28);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Panel heading ── */
+.solution-panel-heading {
+  margin: 0 0 20px 0;
+  font-size: clamp(28px, 4vw, 52px);
+  line-height: 1.08;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.025em;
+  text-shadow:
+    0 0 40px rgba(77,255,138,0.25),
+    0 2px 4px rgba(0,0,0,0.5);
+}
+
+/* ── Panel description ── */
+.solution-panel-desc {
+  margin: 0 0 28px 0;
+  font-size: clamp(14px, 1.2vw, 17px);
+  line-height: 1.72;
+  font-weight: 400;
+  color: rgba(255,255,255,0.72);
+  max-width: 56ch;
+}
+
+/* ── Panel bottom bar (lime rule) ── */
+.solution-panel-bar {
+  width: 48px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #4dff8a, transparent);
+  box-shadow: 0 0 10px rgba(77,255,138,0.5);
+}
+
+/* ── Right dot nav ── */
+.solution-dots {
+  position: absolute;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.solution-dot {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  transition:
+    background   0.4s ease,
+    transform    0.4s cubic-bezier(0.34,1.56,0.64,1),
+    box-shadow   0.4s ease;
+}
+
+.solution-dot.active {
+  background: #4dff8a;
+  transform: scale(2.0);
+  box-shadow: 0 0 14px rgba(77,255,138,1), 0 0 4px rgba(77,255,138,1);
+}
+
+/* ── HUD counter ── */
+.solution-hud {
+  position: absolute;
+  right: 32px;
+  bottom: 52px;
+  z-index: 10;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  font-weight: 600;
+  color: rgba(255,255,255,0.4);
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.solution-hud-num   { color: #4dff8a; font-size: 14px; }
+.solution-hud-total { color: rgba(255,255,255,0.3); }
+
+/* ── Closing / CTA ── */
+.cta-sub {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.38);
+  margin-top: 24px;
+}
+
+/* ── Closing Section Drone Reveal Snap ── */
+.closing-section {
+  position: relative;
+  z-index: 10;
+}
+
+.closing-section .slide {
+  height: 100vh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
