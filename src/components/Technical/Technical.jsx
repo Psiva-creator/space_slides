@@ -594,7 +594,29 @@ export default function Technical() {
         .vs-card-desc { font-family: 'Inter', sans-serif; font-size: 12px; line-height: 1.5; color: rgba(255,255,255,0.55); }
         .vs-card-line { font-family: 'Fira Code', monospace; font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 4px; }
 
-        .vs-edge-flow, .vs-children-wrap { width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .vs-edge-flow, .vs-children-wrap { 
+          width: 100%; 
+          display: flex; 
+          flex-direction: column; 
+          align-items: center; 
+          position: absolute;
+          top: 0;
+          left: 0;
+          pointer-events: none;
+          z-index: 0;
+        }
+        .vs-edge-flow.is-active, .vs-children-wrap.is-active {
+          pointer-events: auto;
+          z-index: 10;
+        }
+        .vs-content-area {
+          position: relative;
+          width: 100%;
+          max-width: 1100px;
+          margin: 0 auto;
+          margin-top: 24px;
+          min-height: 500px;
+        }
 
         /* ---------- scroll hint ---------- */
         .vs-scroll-hint {
@@ -671,13 +693,16 @@ export default function Technical() {
                     <span className="vs-branch-index">{b.index}</span>
                     <span className="vs-branch-label">{b.label}</span>
                   </div>
-
-                  {b.id === "edge" && <EdgeInferenceFlow active={isActive} />}
-                  {b.id === "ml" && <ChildCards children={ML_CHILDREN} active={isActive} />}
-                  {b.id === "dash" && <ChildCards children={DASH_CHILDREN} active={isActive} />}
                 </div>
               );
             })}
+          </div>
+
+          {/* Centralized full-width content area prevents layout shifts and text squishing */}
+          <div className="vs-content-area">
+            <EdgeInferenceFlow active={active === "edge"} />
+            <ChildCards children={ML_CHILDREN} active={active === "ml"} />
+            <ChildCards children={DASH_CHILDREN} active={active === "dash"} />
           </div>
         </div>
       </div>
