@@ -143,8 +143,8 @@ export default function Background({ titleSlideRef, subtitleRef, scrollHintRef, 
 
     // ── Instantiate Procedural Drone ──
     const { mesh: droneMesh, material: droneMat } = createProceduralDrone();
-    droneMesh.scale.set(16, 16, 16); // Scaled up even more to compensate for massive distance
-    droneMesh.position.set(0, -90, -250); // Pushed very far back to maximize arrival parallax
+    droneMesh.scale.set(14, 14, 14); // Scaled down relative to distance to make it appear further away
+    droneMesh.position.set(0, -80, -400); // Pushed significantly backward so particles visually compress and look solid
     droneMesh.rotation.x = 0.15; // default fly tilt
     scene.add(droneMesh);
 
