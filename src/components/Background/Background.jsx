@@ -84,19 +84,22 @@ export default function Background({ titleSlideRef, subtitleRef, scrollHintRef, 
     const probS  = PROBLEMS.map(p => sampleText(p.line1, p.line2, 420, 250, -246));
     const allSamples = [vaayuS, ...probS];
 
-    const allTargets = allSamples.map(({ pts, cols }, ti) => {
-      const tPos = origPos.slice(), tCol = origCol.slice();
-      const nT = Math.min(pts.length/3, N);
-      for (let i = 0; i < nT; i++) {
-        const i3=i*3;
-        tPos[i3]  = pts[i3]   + (Math.random()-.5)*2;
-        tPos[i3+1]= pts[i3+1] + (Math.random()-.5)*2;
-        tPos[i3+2]= pts[i3+2] + (Math.random()-.5)*6;
-        tCol[i3]=cols[i3]; tCol[i3+1]=cols[i3+1]; tCol[i3+2]=cols[i3+2];
-        sz[i] = ti===0 ? 4.5+Math.random()*3.5 : 4+Math.random()*3;
-      }
-      return { pos:tPos, col:tCol };
-    });
+    const allTargets = [
+      ...allSamples.map(({ pts, cols }, ti) => {
+        const tPos = origPos.slice(), tCol = origCol.slice();
+        const nT = Math.min(pts.length/3, N);
+        for (let i = 0; i < nT; i++) {
+          const i3=i*3;
+          tPos[i3]  = pts[i3]   + (Math.random()-.5)*2;
+          tPos[i3+1]= pts[i3+1] + (Math.random()-.5)*2;
+          tPos[i3+2]= pts[i3+2] + (Math.random()-.5)*6;
+          tCol[i3]=cols[i3]; tCol[i3+1]=cols[i3+1]; tCol[i3+2]=cols[i3+2];
+          sz[i] = ti===0 ? 4.5+Math.random()*3.5 : 4+Math.random()*3;
+        }
+        return { pos:tPos, col:tCol };
+      }),
+      { pos: origPos, col: origCol }
+    ];
 
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(curPos,3));
@@ -177,12 +180,17 @@ export default function Background({ titleSlideRef, subtitleRef, scrollHintRef, 
     };
     addEventListener('scroll', onScroll, { passive:true });
 
+    const solEl = document.querySelector('.solution-section');
+
     // IntersectionObserver — ONLY thing that triggers morphTo
     const obs = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (!entry.isIntersecting) return;
         if (entry.target === titleSlideRef.current) {
           morphTo(0, 2.0, 0); showSubtitle(); return;
+        }
+        if (entry.target === solEl) {
+          morphTo(7, 2.2, 0); return;
         }
         const idx = probRefs.current.indexOf(entry.target);
         if (idx >= 0) morphTo(idx+1, 2.2, 0.1);
@@ -191,6 +199,7 @@ export default function Background({ titleSlideRef, subtitleRef, scrollHintRef, 
 
     if (titleSlideRef.current) obs.observe(titleSlideRef.current);
     probRefs.current.forEach(el => el && obs.observe(el));
+    if (solEl) obs.observe(solEl);
 
     // ── Drone assembly scroll-linked trigger ──
     const droneTrigger = ScrollTrigger.create({
