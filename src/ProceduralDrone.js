@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { MeshSurfaceSampler } from 'three/examples/jsm/math/MeshSurfaceSampler.js';
 
 export function createProceduralDrone() {
-  const TOTAL_POINTS = 400000;
+  const TOTAL_POINTS = 800000;
   
   const cBody     = new THREE.Color('#EAECEE'); // Crisp White/Light Grey for high visibility
   const cGunmetal = new THREE.Color('#2A2A2A'); // Gunmetal Grey for arms/mechanics
@@ -192,13 +192,13 @@ export function createProceduralDrone() {
     }
   }
 
-  const NUM_BODY = 120000;
-  const NUM_GUNMETAL = 100000;
-  const NUM_SILVER = 80000;
-  const NUM_GOLD = 30000;
-  const NUM_CYAN = 25000; 
-  const NUM_GREEN = 25000;
-  const NUM_RED = 20000;
+  const NUM_BODY = 240000;
+  const NUM_GUNMETAL = 200000;
+  const NUM_SILVER = 160000;
+  const NUM_GOLD = 60000;
+  const NUM_CYAN = 50000; 
+  const NUM_GREEN = 50000;
+  const NUM_RED = 40000;
 
   sampleGeometry(bodyGeo, cBody, NUM_BODY, false);
   sampleGeometry(gunmetalGeo, cGunmetal, NUM_GUNMETAL, false);
@@ -249,9 +249,8 @@ export function createProceduralDrone() {
         vec3 pos = mix(aStartPos, target, p);
         vec4 mv = modelViewMatrix * vec4(pos, 1.0);
         
-        // Stars are large, assembled surface points are tiny and dense
-        // Increased assembled size to 3.8 to ensure full surface coverage
-        float pSize = mix(5.0, 3.8, p);
+        // Dense 800k particles — adjust assembled point size slightly for massive density
+        float pSize = mix(5.0, 3.5, p);
         gl_PointSize = pSize * (150.0 / max(-mv.z, 1.0));
         gl_Position = projectionMatrix * mv;
         

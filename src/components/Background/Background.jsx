@@ -143,8 +143,8 @@ export default function Background({ titleSlideRef, subtitleRef, scrollHintRef, 
 
     // ── Instantiate Procedural Drone ──
     const { mesh: droneMesh, material: droneMat } = createProceduralDrone();
-    droneMesh.scale.set(12, 12, 12); // Scaled up to compensate for distance
-    droneMesh.position.set(0, -70, -150); // Pushed further back to enhance arrival parallax
+    droneMesh.scale.set(16, 16, 16); // Scaled up even more to compensate for massive distance
+    droneMesh.position.set(0, -90, -250); // Pushed very far back to maximize arrival parallax
     droneMesh.rotation.x = 0.15; // default fly tilt
     scene.add(droneMesh);
 
@@ -154,10 +154,10 @@ export default function Background({ titleSlideRef, subtitleRef, scrollHintRef, 
     const morphTo = (idx, dur=2.0, delay=0) => {
       ms.fromPos = new Float32Array(curPos);
       ms.fromCol = new Float32Array(curCol);
-      ms.toPos = allTargets[idx].pos;
-      ms.toCol = allTargets[idx].col;
-      ms.t = 0;
+      ms.toPos   = allTargets[idx].pos;
+      ms.toCol   = allTargets[idx].col;
       gsap.killTweensOf(ms);
+      ms.t = 0;
       gsap.to(ms, { t:1, duration:dur, delay, ease:'expo.inOut' });
     };
 
@@ -179,8 +179,8 @@ export default function Background({ titleSlideRef, subtitleRef, scrollHintRef, 
       
       const prog = Math.min(1, scrollY / innerHeight);
       
-      // Continuous warp effect for nebula (faster travel)
-      nebulaMat.uniforms.uScroll.value = totalProg * 12.0; 
+      // Continuous warp effect for nebula (double high-speed travel)
+      nebulaMat.uniforms.uScroll.value = totalProg * 24.0; 
       
       // Continuous Z-axis travel for the camera (travel closer to the drone)
       camera.position.z = 480 - totalProg * 350;
