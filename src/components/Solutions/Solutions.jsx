@@ -12,104 +12,146 @@ export default function Solutions() {
 
     const panels      = gsap.utils.toArray('.solution-panel');
     const totalPanels  = panels.length;
-    const MINI_LEFT_X  = 36;
 
-    // Quintic smoothstep — ultra-smooth s-curve
-    const ss = (a, b, x) => {
-      const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
-      return t * t * t * (t * (t * 6 - 15) + 10);
-    };
+    // Remove the left mini stack since it's no longer part of the vertical design
+    const miniStack = document.querySelector('.solution-mini-stack');
+    if (miniStack) {
+      miniStack.style.display = 'none';
+    }
 
-    const computeLayout = () => {
-      const W = window.innerWidth, H = window.innerHeight;
-      const panelW    = Math.min(740, W * 0.82);
-      const panelH    = 280;
-      const maxMiniW  = Math.max(60, (W - panelW) / 2 - MINI_LEFT_X - 20);
-      const miniScale = Math.min(0.26, maxMiniW / panelW);
-      const miniSlotH = panelH * miniScale + 16;
-      const stackTopY = Math.max(110, (H - totalPanels * miniSlotH) / 2);
-      const cX = (W - panelW) / 2;
-      const cY = (H - panelH) / 2;
-      return { W, H, panelW, panelH, miniScale, miniSlotH, stackTopY, cX, cY };
-    };
-
-    // Progress 0→1 is divided into totalPanels equal segments.
-    // Each segment: [0 → ENTER_END] enter, [ENTER_END → EXIT_START] dwell, [EXIT_START → 1] exit.
-    // The LAST card never exits — it stays at dwell until ScrollTrigger releases.
     const applyStates = (progress) => {
-      const { W, miniScale, miniSlotH, stackTopY, cX, cY } = computeLayout();
+      const H = window.innerHeight;
+      
+      // We want progress to go from 0 to 1 over (totalPanels - 1) transitions
+      // So vScroll goes from 0 to totalPanels - 1.
+      const vScroll = progress * (totalPanels - 1);
 
-      // Map progress [0,1] → [0, totalPanels]. Card i owns [i, i+1).
-      // At progress=1 we clamp to the last card dwelling.
-      const scaled     = Math.min(progress * totalPanels, totalPanels - 0.001);
-      const currentIdx = Math.floor(scaled);
-      const subT       = scaled - currentIdx;
-      const isLast     = currentIdx === totalPanels - 1;
-
-      const ENTER_END  = 0.40;   // 0%→40% of card's window: enter
-      const EXIT_START = 0.75;   // 75%→100%: shrink to mini (skipped for last card)
+      // We define properties at integer distances x from focus (0 is active)
+      const getLayout = (x) => {
+        const absX = Math.abs(x);
+        const n = Math.floor(absX);
+        const f = absX - n;
+        
+        const K = [
+          { // x = 0 (Active)
+            w: 86, // vw
+            s: 1.05, 
+            o: 1, 
+            yOffset: 0, 
+            b: 0, 
+            glow: 1,
+            contentO: 1,
+            padTop: 48,
+            padSide: 52
+          },
+          { // x = 1 (Prev/Next 1)
+            w: 50, // vw
+            s: 0.90, 
+            o: 0.5, 
+            yOffset: H * 0.38, 
+            b: 2, 
+            glow: 0.2,
+            contentO: 0,
+            padTop: 32,
+            padSide: 36
+          },
+          { // x = 2 (Prev/Next 2)
+            w: 42, // vw
+            s: 0.80, 
+            o: 0.15, 
+            yOffset: H * 0.38 + H * 0.20, 
+            b: 5, 
+            glow: 0,
+            contentO: 0,
+            padTop: 24,
+            padSide: 24
+          },
+          { // x >= 3
+            w: 38, // vw
+            s: 0.70, 
+            o: 0, 
+            yOffset: H * 0.38 + H * 0.20 + H * 0.15, 
+            b: 8, 
+            glow: 0,
+            contentO: 0,
+            padTop: 24,
+            padSide: 24
+          }
+        ];
+        
+        const idx1 = Math.min(n, K.length - 1);
+        const idx2 = Math.min(n + 1, K.length - 1);
+        
+        const k1 = K[idx1];
+        const k2 = K[idx2];
+        
+        // Sine ease for smooth transitions (gives that "scrubbing physical" feel)
+        const easeF = 0.5 - Math.cos(f * Math.PI) / 2;
+        const lerp = (a, b, t) => a + (b - a) * t;
+        const yVal = lerp(k1.yOffset, k2.yOffset, easeF);
+        
+        return {
+          w: lerp(k1.w, k2.w, easeF),
+          s: lerp(k1.s, k2.s, easeF),
+          o: lerp(k1.o, k2.o, easeF),
+          y: x < 0 ? -yVal : yVal, // apply sign for above/below
+          b: lerp(k1.b, k2.b, easeF),
+          glow: lerp(k1.glow, k2.glow, easeF),
+          contentO: lerp(k1.contentO, k2.contentO, easeF),
+          padTop: lerp(k1.padTop, k2.padTop, easeF),
+          padSide: lerp(k1.padSide, k2.padSide, easeF),
+        };
+      };
 
       panels.forEach((panel, i) => {
-        const miniY = stackTopY + i * miniSlotH;
+        const x = i - vScroll; 
+        const layout = getLayout(x);
+        
+        // Base styling for centered positioning
+        gsap.set(panel, {
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          xPercent: -50,
+          yPercent: -50,
+          width: `${layout.w}vw`,
+          maxWidth: '1200px',
+          padding: `${layout.padTop}px ${layout.padSide}px`,
+          y: layout.y,
+          scale: layout.s,
+          opacity: layout.o,
+          filter: `blur(${layout.b}px)`,
+          zIndex: 100 - Math.round(Math.abs(x) * 10),
+          transformOrigin: 'center center',
+          boxShadow: layout.glow > 0.01 
+            ? `0 0 0 1px rgba(77,255,138, ${0.1 * layout.glow}), 
+               0 0 60px rgba(77,255,138, ${0.2 * layout.glow}), 
+               0 0 80px rgba(138,77,255, ${0.15 * layout.glow}), 
+               0 32px 80px rgba(0,0,0,0.55), 
+               inset 0 1px 0 rgba(255,255,255,0.05)`
+            : `0 32px 80px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05)`,
+          borderColor: `rgba(77,255,138, ${0.1 + 0.3 * layout.glow})`
+        });
 
-        if (i < currentIdx) {
-          // ── PAST: shrunk in mini stack ──
-          const depth = currentIdx - 1 - i;
-          gsap.set(panel, {
-            x: MINI_LEFT_X, y: miniY,
-            scale: miniScale,
-            opacity: Math.max(0.15, 0.6 - depth * 0.12),
-            filter: 'blur(0px)',
-            transformOrigin: 'top left',
+        const desc = panel.querySelector('.solution-panel-desc');
+        const bar = panel.querySelector('.solution-panel-bar');
+        
+        // Hide details by wrapping in opacity and height change
+        if (desc) {
+          gsap.set(desc, { 
+            opacity: layout.contentO,
+            height: layout.contentO > 0.05 ? 'auto' : 0,
+            margin: layout.contentO > 0.05 ? '0 0 28px 0' : 0,
+            overflow: 'hidden'
           });
-        } else if (i === currentIdx) {
-          // ── ACTIVE CARD ──
-          if (subT < ENTER_END && currentIdx > 0) {
-            // Enter: sweep from bottom-right
-            const p = ss(0, ENTER_END, subT);
-            gsap.set(panel, {
-              x: cX + (1 - p) * W * 0.18,
-              y: cY + (1 - p) * 60,
-              scale: 0.86 + 0.14 * p,
-              opacity: p,
-              filter: `blur(${14 * (1 - p)}px)`,
-              transformOrigin: 'top left',
-            });
-          } else if (subT > EXIT_START && !isLast) {
-            // Exit: drift to mini slot on left
-            const p = ss(EXIT_START, 1.0, subT);
-            gsap.set(panel, {
-              x: cX + (MINI_LEFT_X - cX) * p,
-              y: cY + (miniY - cY) * p,
-              scale: 1 + (miniScale - 1) * p,
-              opacity: 1 - p * 0.4,
-              filter: `blur(${p * 3}px)`,
-              transformOrigin: 'top left',
-            });
-          } else {
-            // Dwell: centered, fully visible
-            gsap.set(panel, {
-              x: cX, y: cY, scale: 1, opacity: 1,
-              filter: 'blur(0px)', transformOrigin: 'top left',
-            });
-          }
-        } else {
-          // ── FUTURE: hidden off-screen ──
-          gsap.set(panel, {
-            x: cX + W * 0.18, y: cY + 60,
-            scale: 0.86, opacity: 0,
-            filter: 'blur(14px)',
-            transformOrigin: 'top left',
-          });
+        }
+        if (bar) {
+          gsap.set(bar, { opacity: layout.contentO });
         }
       });
 
-      // Mini card highlights
-      document.querySelectorAll('.solution-mini-card').forEach((mc, mi) => {
-        mc.classList.toggle('active', mi === currentIdx);
-        mc.classList.toggle('past',   mi <  currentIdx);
-      });
       // Dot nav
+      const currentIdx = Math.round(vScroll);
       document.querySelectorAll('.solution-dot').forEach((dot, di) => {
         dot.classList.toggle('active', di === currentIdx);
       });
@@ -126,17 +168,14 @@ export default function Solutions() {
     const st = ScrollTrigger.create({
       trigger:  solutionSection,
       start:    'top top',
-      end:      `+=${totalPanels * 100}vh`,
+      end:      `+=${totalPanels * 120}vh`, // Longer scroll duration for smooth UX
       pin:      true,
-      scrub:    1.5,
+      scrub:    1.2,
       onUpdate: (self) => applyStates(self.progress),
-      // Re-initialize when scrolling back into the section
       onEnter:     () => applyStates(0),
       onEnterBack: () => applyStates(1),
       onLeaveBack: () => { gsap.set(panels, { opacity: 0 }); },
     });
-
-    // Removed canvas opacity fade triggers so the background theme remains fully visible
 
     return () => ScrollTrigger.getAll().forEach(s => s.kill());
   }, []);
@@ -152,14 +191,7 @@ export default function Solutions() {
         <div className="solution-progress-track">
           <div className="solution-progress-fill" />
         </div>
-        <div className="solution-mini-stack">
-          {SOLUTION_STAGES.map((s, i) => (
-            <div className="solution-mini-card" data-i={i} key={i}>
-              <span className="solution-mini-num">{s.num}</span>
-              <span className="solution-mini-title">{s.title}</span>
-            </div>
-          ))}
-        </div>
+        {/* Render panels directly for vertical stack */}
         {SOLUTION_STAGES.map((s, i) => (
           <div className="solution-panel" key={i} data-i={i}>
             <div className="solution-panel-top">
@@ -167,7 +199,7 @@ export default function Solutions() {
               <span className="solution-panel-counter">{s.num} / {String(SOLUTION_STAGES.length).padStart(2,'0')}</span>
             </div>
             <h2 className="solution-panel-heading">{s.title}</h2>
-            <p className="solution-panel-desc">{s.desc}</p>
+            <div className="solution-panel-desc">{s.desc}</div>
             <div className="solution-panel-bar" />
           </div>
         ))}
@@ -184,3 +216,4 @@ export default function Solutions() {
     </section>
   );
 }
+

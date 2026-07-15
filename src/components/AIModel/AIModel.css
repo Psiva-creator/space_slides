@@ -1,23 +1,9 @@
 /* ═══════════════════════════════════════════════════
-   AIApp.css — Vaayu Swarm — Scroll-animated pipeline
-═══════════════════════════════════════════════════ */
+   AIModel.css — Vaayu Swarm — Scroll-animated pipeline
+   ═══════════════════════════════════════════════════ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* ══════════════════════════════════
-   SCROLL ROOT — two full-height slides
-══════════════════════════════════ */
-#ai-scroll-root {
-  position: fixed;
-  inset: 0;
-  z-index: 10;
-  overflow-y: scroll;
-  scroll-snap-type: y mandatory;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* ══════════════════════════════════
-   SLIDE 1 — Landing
-══════════════════════════════════ */
+/* ── SLIDE 1 — Landing ── */
 .ai-landing-slide {
   height: 100vh;
   display: flex;
@@ -90,18 +76,18 @@
   50%      { transform: translateY(6px); }
 }
 
-/* ══════════════════════════════════
-   SLIDE 2 — Flow diagram
-══════════════════════════════════ */
+/* ── SLIDE 2 — Flow diagram ── */
 .ai-flow-slide {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 28px 36px;
+  padding: 80px 36px;
   scroll-snap-align: start;
   scroll-snap-stop: always;
   font-family: 'Inter', sans-serif;
+  position: relative;
+  box-sizing: border-box;
 }
 
 .ai-flow-header {
@@ -141,15 +127,13 @@
 .ai-dot--edge   { background: #d1f734; box-shadow: 0 0 9px #d1f734; }
 .ai-dot--server { background: #00d4ff; box-shadow: 0 0 9px #00d4ff; }
 
-/* ══════════════════════════════════
-   ROW WRAPPERS
-══════════════════════════════════ */
+/* ── ROW WRAPPERS ── */
 .flow-row-wrap {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-.flow-row-wrap--server { margin-top: 0; }
+.flow-row-wrap--server { margin-top: 24px; }
 
 .flow-row-label {
   font-size: 8px;
@@ -173,9 +157,7 @@
   min-width: 0;
 }
 
-/* ══════════════════════════════════
-   FLOW BOX — base (hidden state)
-══════════════════════════════════ */
+/* ── FLOW BOX ── */
 .flow-box {
   display: flex;
   flex-direction: row;
@@ -285,9 +267,7 @@
   min-width: 0;
 }
 
-/* ══════════════════════════════════
-   ARROWS — also animated
-══════════════════════════════════ */
+/* ── ARROWS ── */
 .flow-arrow {
   display: flex;
   align-items: center;
@@ -317,9 +297,7 @@
 }
 .flow-arrow--server .flow-arrow-head { border-left: 10px solid rgba(0,212,255,0.65); }
 
-/* ══════════════════════════════════
-   HANDOFF NODE — also animated
-══════════════════════════════════ */
+/* ── HANDOFF NODE ── */
 .handoff-wrap {
   display: flex;
   flex-direction: column;
