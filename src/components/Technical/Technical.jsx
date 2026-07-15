@@ -319,7 +319,8 @@ export default function Technical() {
           position: relative;
           width: 100%;
           min-height: 100vh;
-          background: transparent;
+          /* Add a soft dark gradient overlay to dim the bright nebula specifically for this section to improve legibility */
+          background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 15%, rgba(0,0,0,0.65) 50%, rgba(0,0,0,0.5) 85%, rgba(0,0,0,0) 100%);
           color: #fff;
           padding: 96px 5vw 120px;
           box-sizing: border-box;
@@ -455,7 +456,9 @@ export default function Technical() {
         .vs-node {
           position: relative;
           border: 1px solid rgba(255,255,255,0.28);
-          background: rgba(255,255,255,0.06);
+          background: rgba(0, 0, 0, 0.65); /* Darker background for text contrast against nebula */
+          backdrop-filter: blur(12px); /* Glassmorphism blur to separate from background */
+          -webkit-backdrop-filter: blur(12px);
           border-radius: 3px;
           padding: 18px 22px;
           text-align: center;
@@ -565,7 +568,9 @@ export default function Technical() {
 
         .vs-card {
           border: 1px solid rgba(255,255,255,0.2);
-          background: rgba(255,255,255,0.04);
+          background: rgba(0, 0, 0, 0.55); /* Darker background for text contrast against nebula */
+          backdrop-filter: blur(12px); /* Glassmorphism blur to separate from background */
+          -webkit-backdrop-filter: blur(12px);
           border-radius: 3px;
           padding: 16px 16px 18px;
           opacity: 0;

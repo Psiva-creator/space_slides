@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { MeshSurfaceSampler } from 'three/examples/jsm/math/MeshSurfaceSampler.js';
 
 export function createProceduralDrone() {
-  const TOTAL_POINTS = 8000000;
+  const TOTAL_POINTS = 2000000;
   
   const cBody     = new THREE.Color('#EAECEE'); // Crisp White/Light Grey for high visibility
   const cGunmetal = new THREE.Color('#2A2A2A'); // Gunmetal Grey for arms/mechanics
@@ -192,13 +192,13 @@ export function createProceduralDrone() {
     }
   }
 
-  const NUM_BODY = 2400000;
-  const NUM_GUNMETAL = 2000000;
-  const NUM_SILVER = 1600000;
-  const NUM_GOLD = 600000;
-  const NUM_CYAN = 500000; 
-  const NUM_GREEN = 500000;
-  const NUM_RED = 400000;
+  const NUM_BODY = 600000;
+  const NUM_GUNMETAL = 500000;
+  const NUM_SILVER = 400000;
+  const NUM_GOLD = 150000;
+  const NUM_CYAN = 125000; 
+  const NUM_GREEN = 125000;
+  const NUM_RED = 100000;
 
   sampleGeometry(bodyGeo, cBody, NUM_BODY, false);
   sampleGeometry(gunmetalGeo, cGunmetal, NUM_GUNMETAL, false);
@@ -249,8 +249,8 @@ export function createProceduralDrone() {
         vec3 pos = mix(aStartPos, target, p);
         vec4 mv = modelViewMatrix * vec4(pos, 1.0);
         
-        // Dense 8 million particles — adjust assembled point size slightly for massive density
-        float pSize = mix(5.0, 3.0, p);
+        // Dense 2 million particles — optimized point size for 60fps performance and solidity
+        float pSize = mix(5.0, 3.2, p);
         gl_PointSize = pSize * (150.0 / max(-mv.z, 1.0));
         gl_Position = projectionMatrix * mv;
         
