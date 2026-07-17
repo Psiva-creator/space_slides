@@ -36,3 +36,5 @@ stash_additions.txt
 *.jpeg
 *.jpg
 referenceimages/
+.vercel
+.env*
