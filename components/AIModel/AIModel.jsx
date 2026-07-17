@@ -136,10 +136,10 @@ export default function AIModel() {
   return (
     <div className="ai-model-wrapper">
       {/* ── SLIDE 1: Landing ── */}
-      <section className="ai-landing-slide slide">
+      <section className="ai-landing-slide slide" data-section="true" data-label="AIModel">
         <div ref={titleRef} className="ai-landing-content">
           <div className="ai-landing-tag">VAAYU SWARM</div>
-          <h1 className="ai-landing-headline">System Architecture</h1>
+          <h2 className="ai-landing-headline">AI Pipeline</h2>
           <p className="ai-landing-sub">
             CAMERA · EDGE &nbsp;→&nbsp; SERVER · CLOUD
           </p>

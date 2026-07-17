@@ -47,7 +47,7 @@ export default function Background({ titleSlideRef, subtitleRef, scrollHintRef, 
   useEffect(() => {
     const W = innerWidth, H = innerHeight;
     const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current, antialias: false });
-    renderer.setSize(W, H); renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.autoClear = false;
+    renderer.setSize(W, H); renderer.setPixelRatio(Math.min(devicePixelRatio, 1.0)); renderer.autoClear = false;
     const scene  = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 2000);
     camera.position.set(0, 0, 480);
@@ -170,23 +170,22 @@ export default function Background({ titleSlideRef, subtitleRef, scrollHintRef, 
     };
     gsap.to(ms, { t:1, duration:2.8, delay:0.5, ease:'expo.inOut', onComplete:showSubtitle });
 
-    // Scroll listener — ONLY for continuous Z-axis space travel + subtitle fade. Does NOT touch ms.t
+    // Scroll listener — rAF-throttled so it fires at most once per 16ms frame
+    let scrollRafId = null;
     const onScroll = () => {
-      const scrollY = window.scrollY;
-      const innerHeight = window.innerHeight;
-      const maxScroll = document.body.scrollHeight - innerHeight;
-      const totalProg = maxScroll > 0 ? scrollY / maxScroll : 0;
-      
-      const prog = Math.min(1, scrollY / innerHeight);
-      
-      // Continuous warp effect for nebula (double high-speed travel)
-      nebulaMat.uniforms.uScroll.value = totalProg * 24.0; 
-      
-      // Continuous Z-axis travel for the camera (travel closer to the drone)
-      camera.position.z = 480 - totalProg * 350;
-
-      if (subtitleRef.current)   subtitleRef.current.style.opacity   = Math.max(0, 1 - prog*2.2);
-      if (scrollHintRef.current) scrollHintRef.current.style.opacity = Math.max(0, 1 - prog*3.5);
+      if (scrollRafId) return;
+      scrollRafId = requestAnimationFrame(() => {
+        scrollRafId = null;
+        const scrollY = window.scrollY;
+        const innerHeight = window.innerHeight;
+        const maxScroll = document.body.scrollHeight - innerHeight;
+        const totalProg = maxScroll > 0 ? scrollY / maxScroll : 0;
+        const prog = Math.min(1, scrollY / innerHeight);
+        nebulaMat.uniforms.uScroll.value = totalProg * 24.0;
+        camera.position.z = 480 - totalProg * 350;
+        if (subtitleRef.current)   subtitleRef.current.style.opacity   = Math.max(0, 1 - prog*2.2);
+        if (scrollHintRef.current) scrollHintRef.current.style.opacity = Math.max(0, 1 - prog*3.5);
+      });
     };
     addEventListener('scroll', onScroll, { passive:true });
 
@@ -261,15 +260,17 @@ export default function Background({ titleSlideRef, subtitleRef, scrollHintRef, 
       camera.position.x = Math.sin(t*0.11)*4;
       camera.lookAt(0,0,0);
 
-      // Use ms.t directly — no ms.scroll interference
+      // Only lerp particles when a morph is actually in progress — skip when idle
       const eff = ms.t;
-      const fP=ms.fromPos, fC=ms.fromCol, tP=ms.toPos, tC=ms.toCol;
-      for (let i = 0; i < N*3; i++) {
-        curPos[i] = fP[i] + (tP[i]-fP[i])*eff;
-        curCol[i] = fC[i] + (tC[i]-fC[i])*eff;
+      if (eff > 0.001 && eff < 0.999) {
+        const fP=ms.fromPos, fC=ms.fromCol, tP=ms.toPos, tC=ms.toCol;
+        for (let i = 0; i < N*3; i++) {
+          curPos[i] = fP[i] + (tP[i]-fP[i])*eff;
+          curCol[i] = fC[i] + (tC[i]-fC[i])*eff;
+        }
+        geo.attributes.position.needsUpdate = true;
+        geo.attributes.color.needsUpdate    = true;
       }
-      geo.attributes.position.needsUpdate = true;
-      geo.attributes.color.needsUpdate    = true;
 
       renderer.clear();
       renderer.render(nebulaScene, nebulaCam);

@@ -14,6 +14,7 @@ import Challenges from './components/Challenges/Challenges';
 import FutureScopes from './components/FutureScopes/FutureScopes';
 import References from './components/References/References';
 import Closing from './components/Closing/Closing';
+import PageNav from './components/PageNav/PageNav';
 
 export default function App() {
   const subtitleRef   = useRef(null);
@@ -38,7 +39,7 @@ export default function App() {
       </div>
 
       <div id="scroll-root" ref={scrollRef}>
-        <section className="slide title-slide" ref={titleSlideRef} />
+        <section className="slide title-slide" ref={titleSlideRef} data-section="true" data-label="Hero" />
         
         {/* 2. Problem Statement */}
         <Problems probRefs={probRefs} />
@@ -58,7 +59,7 @@ export default function App() {
         {/* 7. AI Model */}
         <AIModel />
         
-        {/* 8. RLHF */}
+        {/* 8. RLAIF */}
         <RLHF />
         
         {/* 9. Hardware Demonstration */}
@@ -76,6 +77,10 @@ export default function App() {
         {/* End / Closing */}
         <Closing />
       </div>
+
+      {/* Global step navigation — ↑ ↓ buttons */}
+      <PageNav />
     </Layout>
   );
 }
+

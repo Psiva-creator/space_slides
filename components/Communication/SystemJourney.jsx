@@ -301,7 +301,7 @@ export default function SystemJourney() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="comm-section">
+    <section data-section="true" data-label="Communication" ref={sectionRef} className="comm-section">
       <div ref={stageRef} className="comm-stage">
         {/* Ambient background glow */}
         <div className="comm-glow-orb" />

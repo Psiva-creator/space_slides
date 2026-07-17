@@ -185,8 +185,6 @@ function ParticleTitle({ lines, reduced }) {
         const idle = t >= 1 ? Math.sin(idleT + p.phase) * 1.1 : 0;
         ctx.beginPath();
         ctx.fillStyle = `hsla(${p.hue}, ${p.sat}%, ${p.light}%, ${0.5 + e * 0.5})`;
-        ctx.shadowColor = "rgba(209,247,52,0.55)";
-        ctx.shadowBlur = 4;
         ctx.arc(x, y + idle, p.r, 0, Math.PI * 2);
         ctx.fill();
       }
@@ -312,7 +310,7 @@ export default function Technical() {
   const handleClick = (id) => setActive((cur) => (cur === id ? null : id));
 
   return (
-    <section className={`vs-flow${reduced ? " vs-flow--reduced" : ""}`}>
+    <section className={`vs-flow${reduced ? " vs-flow--reduced" : ""}`} data-section="true" data-label="Technical">
       <style>{`
         .vs-flow {
           --ease-expo: cubic-bezier(0.87, 0, 0.13, 1);
@@ -330,22 +328,20 @@ export default function Technical() {
           scroll-snap-stop: always;
         }
 
-        /* ---------- drifting aurora / nebula layer ---------- */
+        /* ---------- static aurora / nebula tint — NO CSS filter, uses GPU compositing only ---------- */
         .vs-aurora {
           position: absolute;
           inset: -12%;
           pointer-events: none;
           z-index: 0;
           background:
-            radial-gradient(38% 30% at 20% 18%, rgba(20,115,13,0.34), transparent 62%),
-            radial-gradient(30% 26% at 82% 12%, rgba(64,179,31,0.20), transparent 66%),
-            radial-gradient(44% 34% at 55% 88%, rgba(8,46,5,0.55), transparent 70%),
-            radial-gradient(25% 20% at 88% 78%, rgba(20,115,13,0.18), transparent 65%);
-          filter: blur(60px);
-          mix-blend-mode: screen;
-          opacity: 0.85;
-          animation: vsAuroraDrift 28s var(--ease-expo) infinite alternate;
+            radial-gradient(38% 30% at 20% 18%, rgba(20,115,13,0.28), transparent 62%),
+            radial-gradient(30% 26% at 82% 12%, rgba(64,179,31,0.16), transparent 66%),
+            radial-gradient(44% 34% at 55% 88%, rgba(8,46,5,0.45), transparent 70%),
+            radial-gradient(25% 20% at 88% 78%, rgba(20,115,13,0.14), transparent 65%);
+          opacity: 0.9;
           will-change: transform;
+          animation: vsAuroraDrift 28s ease-in-out infinite alternate;
         }
         @keyframes vsAuroraDrift {
           0%   { transform: translate3d(-2%, -1%, 0) scale(1) rotate(0deg); }
@@ -456,9 +452,7 @@ export default function Technical() {
         .vs-node {
           position: relative;
           border: 1px solid rgba(255,255,255,0.28);
-          background: rgba(0, 0, 0, 0.65); /* Darker background for text contrast against nebula */
-          backdrop-filter: blur(12px); /* Glassmorphism blur to separate from background */
-          -webkit-backdrop-filter: blur(12px);
+          background: rgba(0, 0, 0, 0.80);
           border-radius: 3px;
           padding: 18px 22px;
           text-align: center;
@@ -568,9 +562,7 @@ export default function Technical() {
 
         .vs-card {
           border: 1px solid rgba(255,255,255,0.2);
-          background: rgba(0, 0, 0, 0.55); /* Darker background for text contrast against nebula */
-          backdrop-filter: blur(12px); /* Glassmorphism blur to separate from background */
-          -webkit-backdrop-filter: blur(12px);
+          background: rgba(0, 0, 0, 0.80);
           border-radius: 3px;
           padding: 16px 16px 18px;
           opacity: 0;

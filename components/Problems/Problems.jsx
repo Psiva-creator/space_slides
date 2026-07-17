@@ -5,7 +5,7 @@ export default function Problems({ probRefs }) {
   return (
     <>
       {PROBLEMS.map((p, i) => (
-        <section key={i} className="problem-slide" ref={el => probRefs.current[i] = el}>
+        <section key={i} className="problem-slide" ref={el => probRefs.current[i] = el} data-section="true" data-label={`Problem ${i + 1}`}>
           <div className="prob-left">
             <div className="prob-particle-zone" />
             <div className="news-card">

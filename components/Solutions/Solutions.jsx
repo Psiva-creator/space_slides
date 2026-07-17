@@ -1,11 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 import { SOLUTION_STAGES } from '../../data/content';
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 export default function Solutions() {
+  const currentIndexRef = useRef(0);
+  const navigateRef = useRef(null);
   useEffect(() => {
     const solutionSection = document.querySelector('.solution-section');
     if (!solutionSection) return;
@@ -38,7 +41,6 @@ export default function Solutions() {
             s: 1.05, 
             o: 1, 
             yOffset: 0, 
-            b: 0, 
             glow: 1,
             contentO: 1,
             padTop: 48,
@@ -47,9 +49,8 @@ export default function Solutions() {
           { // x = 1 (Prev/Next 1)
             w: 50, // vw
             s: 0.90, 
-            o: 0.5, 
+            o: 0.45, 
             yOffset: H * 0.38, 
-            b: 2, 
             glow: 0.2,
             contentO: 0,
             padTop: 32,
@@ -58,9 +59,8 @@ export default function Solutions() {
           { // x = 2 (Prev/Next 2)
             w: 42, // vw
             s: 0.80, 
-            o: 0.15, 
+            o: 0.12, 
             yOffset: H * 0.38 + H * 0.20, 
-            b: 5, 
             glow: 0,
             contentO: 0,
             padTop: 24,
@@ -71,7 +71,6 @@ export default function Solutions() {
             s: 0.70, 
             o: 0, 
             yOffset: H * 0.38 + H * 0.20 + H * 0.15, 
-            b: 8, 
             glow: 0,
             contentO: 0,
             padTop: 24,
@@ -95,7 +94,6 @@ export default function Solutions() {
           s: lerp(k1.s, k2.s, easeF),
           o: lerp(k1.o, k2.o, easeF),
           y: x < 0 ? -yVal : yVal, // apply sign for above/below
-          b: lerp(k1.b, k2.b, easeF),
           glow: lerp(k1.glow, k2.glow, easeF),
           contentO: lerp(k1.contentO, k2.contentO, easeF),
           padTop: lerp(k1.padTop, k2.padTop, easeF),
@@ -107,7 +105,7 @@ export default function Solutions() {
         const x = i - vScroll; 
         const layout = getLayout(x);
         
-        // Base styling for centered positioning
+        // Base styling for centered positioning — no blur filter (too GPU expensive)
         gsap.set(panel, {
           position: 'absolute',
           top: '50%',
@@ -120,7 +118,7 @@ export default function Solutions() {
           y: layout.y,
           scale: layout.s,
           opacity: layout.o,
-          filter: `blur(${layout.b}px)`,
+          filter: 'none',
           zIndex: 100 - Math.round(Math.abs(x) * 10),
           transformOrigin: 'center center',
           boxShadow: layout.glow > 0.01 
@@ -152,6 +150,7 @@ export default function Solutions() {
 
       // Dot nav
       const currentIdx = Math.round(vScroll);
+      currentIndexRef.current = currentIdx;
       document.querySelectorAll('.solution-dot').forEach((dot, di) => {
         dot.classList.toggle('active', di === currentIdx);
       });
@@ -163,25 +162,64 @@ export default function Solutions() {
       if (bar) bar.style.width = `${(progress * 100).toFixed(1)}%`;
     };
 
-    gsap.set(panels, { opacity: 0 });
+
+    // Initialise all panels immediately so Stage 01 is visible on entry
+    applyStates(0);
 
     const st = ScrollTrigger.create({
       trigger:  solutionSection,
       start:    'top top',
-      end:      `+=${totalPanels * 120}vh`, // Longer scroll duration for smooth UX
+      end:      `+=${totalPanels * 120}vh`,
       pin:      true,
-      scrub:    1.2,
+      scrub:    0.3,
       onUpdate: (self) => applyStates(self.progress),
       onEnter:     () => applyStates(0),
-      onEnterBack: () => applyStates(1),
-      onLeaveBack: () => { gsap.set(panels, { opacity: 0 }); },
+      onEnterBack: () => applyStates(totalPanels > 1 ? 1 : 0),
+      onLeaveBack: () => applyStates(0),
+      onRefresh: (self) => {
+        // Re-apply layout after GSAP recalculates pinned positions
+        const currentProgress = self.progress || 0;
+        applyStates(currentProgress);
+        // Store stage scroll positions for PageNav
+        const stageYs = Array.from({ length: totalPanels }, (_, i) => {
+          const progress = totalPanels > 1 ? i / (totalPanels - 1) : 0;
+          return Math.round(self.start + progress * (self.end - self.start));
+        });
+        solutionSection.dataset.stageScrolls = JSON.stringify(stageYs);
+        // Tell PageNav to re-collect with the new correct values
+        window.dispatchEvent(new CustomEvent('solutions-stages-ready'));
+      },
     });
 
-    return () => ScrollTrigger.getAll().forEach(s => s.kill());
+    // ── Button/keyboard navigation ──
+    const navigate = (direction) => {
+      const newIdx = Math.max(0, Math.min(totalPanels - 1, currentIndexRef.current + direction));
+      const targetProgress = totalPanels <= 1 ? 0 : newIdx / (totalPanels - 1);
+      const scrollStart = st.start;
+      const scrollEnd   = st.end;
+      const targetY     = scrollStart + targetProgress * (scrollEnd - scrollStart);
+      gsap.to(window, { scrollTo: { y: targetY }, duration: 0.75, ease: 'power2.inOut', overwrite: true });
+    };
+    navigateRef.current = navigate;
+
+    // Arrow key support (only fires when section is pinned/active)
+    const onKeyDown = (e) => {
+      const rect = solutionSection.getBoundingClientRect();
+      const inView = rect.top <= 10 && rect.bottom >= window.innerHeight * 0.5;
+      if (!inView) return;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); navigate(1); }
+      if (e.key === 'ArrowUp'   || e.key === 'ArrowLeft')  { e.preventDefault(); navigate(-1); }
+    };
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      st.kill();
+      window.removeEventListener('keydown', onKeyDown);
+    };
   }, []);
 
   return (
-    <section className="solution-section">
+    <section className="solution-section" data-section="true" data-label="Solutions">
       <div className="solution-stage">
         <div className="solution-glow-orb" />
         <div className="solution-header">
@@ -211,6 +249,20 @@ export default function Solutions() {
         <div className="solution-hud">
           <span className="solution-hud-num">01</span>
           <span className="solution-hud-total"> / {String(SOLUTION_STAGES.length).padStart(2,'0')}</span>
+        </div>
+
+        {/* ── Up / Down Arrow Buttons ── */}
+        <div className="solution-nav-arrows">
+          <button
+            className="solution-arrow-btn"
+            onClick={() => navigateRef.current?.(-1)}
+            aria-label="Previous stage"
+          >↑</button>
+          <button
+            className="solution-arrow-btn"
+            onClick={() => navigateRef.current?.(1)}
+            aria-label="Next stage"
+          >↓</button>
         </div>
       </div>
     </section>

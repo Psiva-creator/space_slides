@@ -165,8 +165,7 @@
   gap: 16px;
   padding: 20px 18px;
   border-radius: 10px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  /* No backdrop-filter — GPU expensive on 10+ simultaneous elements */
   pointer-events: auto;
   cursor: default;
   flex: 1;
